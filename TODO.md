@@ -1,7 +1,7 @@
 # **TO DO LIST**
 
 >[!IMPORTANT]
-
+>check all box before shipping this project.
 >- [ ] Planning & Requirement Analysis  
 >- [ ] UI/UX Design  
 >- [ ] Backend Development  
@@ -22,9 +22,11 @@
 ---
 
 ### **NOTES PLACE**
->[!NOTES] A place to write daily notes while keeping the scope manageable.  
+>[!NOTES] 
+>A place to write daily notes while keeping the scope manageable.  
 
->[!STARTING-DATE] 23-04-2026  
+>[!TIP] 
+>Start date : 23-04-2026  
 
 >[1] **DAY-1** — Set up and organize all required configuration files to start development as soon as possible.  
 
