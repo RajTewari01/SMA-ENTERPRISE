@@ -41,6 +41,7 @@
 [5] Implement proper error handling and logging.  
 
 [6] ```mermaid
+
 graph TD
     A[System Start] --> B{User Login}
     B -->|Success| C[Load User Config]
@@ -70,3 +71,4 @@ graph TD
     P -->|Rate Limit| Q[Retry Policy]
     Q --> P
     P -->|Permanent Fail| R[Log Error]
+```
