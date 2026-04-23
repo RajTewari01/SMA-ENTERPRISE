@@ -42,7 +42,7 @@
 
 [!TIP]
 >BELOW IS A SIMPLE SYSTEM ARCHITECTURE DIAGRAM UPDATE IT AS THE SYSTEM SCALES.
->```mermaid
+```mermaid
 
 graph TD
     A[System Start] --> B{User Login}
