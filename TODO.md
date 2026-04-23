@@ -1,15 +1,15 @@
 # **TO DO LIST**
 
-[!IMPORTANT]
+>[!IMPORTANT]
 
-[ ] Planning & Requirement Analysis  
-[ ] UI/UX Design  
-[ ] Backend Development  
-[ ] Frontend Development  
-[ ] Testing & QA  
-[ ] Deployment  
-[ ] Documentation  
-[ ] Maintenance & Support  
+>- [ ] Planning & Requirement Analysis  
+>- [ ] UI/UX Design  
+>- [ ] Backend Development  
+>- [ ] Frontend Development  
+>- [ ] Testing & QA  
+>- [ ] Deployment  
+>- [ ] Documentation  
+>- [ ] Maintenance & Support  
 
 ---
 
@@ -22,11 +22,11 @@
 ---
 
 ### **NOTES PLACE**
-[!NOTES] A place to write daily notes while keeping the scope manageable.  
+>[!NOTES] A place to write daily notes while keeping the scope manageable.  
 
-[!STARTING-DATE] 23-04-2026  
+>[!STARTING-DATE] 23-04-2026  
 
-[1] **DAY-1** — Set up and organize all required configuration files to start development as soon as possible.  
+>[1] **DAY-1** — Set up and organize all required configuration files to start development as soon as possible.  
 
 ---
 
