@@ -40,8 +40,9 @@
 [4] Use Redis for caching and session management.  
 [5] Implement proper error handling and logging.  
 
-[6] BELOW IS A SIMPLE SYSTEM ARCHITECTURE DIAGRAM UPDATE IT AS THE SYSTEM SCALES.
-```mermaid
+[!TIP]
+>BELOW IS A SIMPLE SYSTEM ARCHITECTURE DIAGRAM UPDATE IT AS THE SYSTEM SCALES.
+>```mermaid
 
 graph TD
     A[System Start] --> B{User Login}
