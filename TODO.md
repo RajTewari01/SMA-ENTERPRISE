@@ -22,7 +22,7 @@
 ---
 
 ### **NOTES PLACE**
->[!NOTES] 
+>[!NOTE] 
 >A place to write daily notes while keeping the scope manageable.  
 
 >[!TIP] 
