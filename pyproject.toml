@@ -1,7 +1,127 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sma-enterprise"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "A scalable social media automation platform for enterprises with AI integration and multi-platform support."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+license = { file = "MIT" }
+
+authors = [
+    {name = "Biswadeep Tewari", email = "tewari765@gmail.com"},
+]
+
+keywords = [
+    "social-media",
+    "automation",
+    "ai-enterprise",
+    "llm",
+    "content-automation",
+    "scheduler",
+    "multi-platform",
+    "analytics"
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+
+[project.urls]
+Homepage = "https://github.com/RajTewari01/SMA-Enterprise"
+Documentation = "https://github.com/RajTewari01/SMA-Enterprise/tree/main/docs"
+Repository = "https://github.com/RajTewari01/SMA-Enterprise"
+Issues = "https://github.com/RajTewari01/SMA-Enterprise/issues"
+
+dependencies = ["python-dotenv"]
+
+[project.optional-dependencies]
+
+ai = [
+    "torch",
+    "llama-cpp-python",
+    "langchain",
+    "scikit-learn",
+    "pandas",
+    "numpy"
+]
+
+automation = [
+    "selenium",
+    "playwright",
+    "scrapy"
+]
+
+socials = [
+    "instagrapi",
+    "discord.py",
+    "tweepy",
+    "TikTokApi",
+    "praw",
+    "facebook-sdk",
+    "google-api-python-client",
+    "google-auth",
+    "google-auth-oauthlib",
+    "requests-oauthlib"
+]
+
+media = [
+    "moviepy",
+    "imageio",
+    "imageio-ffmpeg",
+    "pillow>=12.1.1"
+]
+
+networking = [
+    "requests>=2.33.0",
+    "httpx",
+    "websocket-client",
+    "aiohttp",
+    "yt-dlp",
+]
+
+core = [
+    "pydantic",
+    "rich",
+    "click",
+    "tqdm"
+]
+
+server = [
+    "fastapi",
+    "uvicorn",
+    "authlib",
+    "httpx"]
+
+all = [
+    "sma-enterprise[ai]",
+    "sma-enterprise[automation]",
+    "sma-enterprise[socials]",
+    "sma-enterprise[media]",
+    "sma-enterprise[networking]",
+    "sma-enterprise[core]",
+    "sma-enterprise[server]"
+]
+
+[project.scripts]
+sma-enterprise = "sma_enterprise.runner:main"
+
+[tool.setuptools.packages.find]
+include = ["apps*", "config*", "core*", "db*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "F401", "E722", "E402", "E741", "E701"]
+
+

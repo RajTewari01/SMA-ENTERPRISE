@@ -1,0 +1,24 @@
+FROM python:3.10
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONFAULTHANDLER=1
+ENV PYTHONHASHSEED=0
+
+WORKDIR /app
+
+# Copy dependency files
+COPY  --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY pyproject.toml README.md ./
+
+# Copy application source code
+COPY config/ ./config/
+COPY core/ ./core/
+COPY db/ ./db/
+COPY services/ ./services/
+
+# Install dependencies (AI and Core for inference)
+RUN uv pip install --system --no-cache-dir .[ai,core,server]
+
+# Default command
+CMD ["sma-agent"]
