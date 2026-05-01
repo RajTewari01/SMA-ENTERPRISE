@@ -1,0 +1,359 @@
+# How to Read API Docs & Map Them to Our Code
+
+This is the practical guide — I'll show you the **real documentation** from Pexels and Pixabay, and exactly how to translate what you read into our `ApiTemplate`.
+
+---
+
+## Step 1: Authentication — "How Do I Prove Who I Am?"
+
+Think of it like entering a building. Every building has a different way to check your identity:
+
+### 🔑 What the Pexels docs say:
+
+> *"Add an Authorization header with your API key as the value."*
+>
+> ```
+> curl -H "Authorization: YOUR_API_KEY" \
+>   "https://api.pexels.com/v1/search?query=cats"
+> ```
+
+**What does this mean?** Look at the `curl` command. There are two parts:
+
+```
+-H "Authorization: YOUR_API_KEY"     ← This is the HEADER (the ID card)
+"https://api.pexels.com/v1/search"   ← This is the URL (the building entrance)
+```
+
+The key goes in the **header**, specifically in a header called `Authorization`. That's what `BEARER` means in our code.
+
+**How we translate it:**
+```python
+# What Pexels docs say          →  What we write in ApiTemplate
+# "Authorization header"        →  auth_type = AuthType.BEARER
+# "with your API key"           →  auth_key = "PEXELS_API_KEY"  (env var name)
+```
+
+---
+
+### 🔑 What the Pixabay docs say:
+
+> ```javascript
+> var URL = "https://pixabay.com/api/?key=" + API_KEY + "&q=red roses"
+> ```
+
+**See the difference?** Pixabay doesn't use a header at all! The key goes **right in the URL**:
+
+```
+https://pixabay.com/api/?key=abc123&q=cats
+                         ^^^^^^^^^^^
+                         Key is IN the URL, not in a header
+```
+
+That's what `QUERY` means — the key is a query parameter.
+
+**How we translate it:**
+```python
+# What Pixabay docs say         →  What we write in ApiTemplate
+# "?key=YOUR_KEY"               →  auth_type = AuthType.QUERY
+# The param is called "key"     →  auth_param = "key"
+# Your actual API key           →  auth_key = "PIXABAY_API_KEY"  (env var name)
+```
+
+---
+
+### The 4 Auth Types — A Simple Analogy
+
+Think of auth_type like **"where do I put my ID card?"**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  BEARER:   "Put your ID card in an envelope labeled 'Authorization'" │
+│                                                                      │
+│            Authorization: h2iw9djq8hs72gdo3u40dm                     │
+│                                                                      │
+│            WHO: Pexels, Unsplash, GitHub                             │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  HEADERS:  "Put your ID card in an envelope labeled 'api_key'"       │
+│                                                                      │
+│            api_key: dc6zaTOxFJmzC                                    │
+│                                                                      │
+│            WHO: Giphy, some internal APIs                            │
+│            (Same as Bearer, but the envelope has a different name)    │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  QUERY:    "Tape your ID card to the front door"                     │
+│                                                                      │
+│            https://pixabay.com/api/?key=abc123&q=cats                │
+│                                         ^^^^^^^^^^                   │
+│            WHO: Pixabay, Google Custom Search                        │
+│                                                                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  NONE:     "No ID needed, the door is open"                          │
+│                                                                      │
+│            WHO: Public APIs with no key                              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### How to figure it out from ANY API docs:
+
+When you read a new API's docs, look for these **clue words**:
+
+| You see this in the docs | → Use this AuthType |
+|---|---|
+| "Authorization header", "Bearer token" | `BEARER` |
+| "Pass header: X-API-Key" or custom header name | `HEADERS` |
+| "Append key=YOUR_KEY to the URL", "query parameter" | `QUERY` |
+| No mention of keys at all | `NONE` |
+
+---
+
+## Step 2: Pagination — "There Are 100,000 Results, How Do I Get Them?"
+
+Imagine you search "mountains" and there are 100,000 photos. The API can't send all 100K at once — it would be gigabytes of data. So it sends them in **pages** (chunks).
+
+But different APIs do paging differently. Here are the three methods:
+
+---
+
+### 📄 PAGE — "Give Me Page 3"
+
+This is like a book. You say "I want page 1", then "I want page 2", etc.
+
+**What Pexels docs say:**
+
+> *Parameters: `page` (default 1), `per_page` (default 15, max 80)*
+
+```
+Request 1:  /search?query=cats&page=1&per_page=20    → photos 1-20
+Request 2:  /search?query=cats&page=2&per_page=20    → photos 21-40
+Request 3:  /search?query=cats&page=3&per_page=20    → photos 41-60
+```
+
+**Pixabay also uses PAGE:**
+
+> *Parameters: `page` (default 1), `per_page` (default 20, max 200)*
+
+```
+Request 1:  /api/?key=xxx&q=cats&page=1&per_page=20  → photos 1-20
+Request 2:  /api/?key=xxx&q=cats&page=2&per_page=20  → photos 21-40
+```
+
+**How we translate it:**
+```python
+pagination = PaginationType.PAGE
+page_params = "page"           # ← what the URL param is called
+per_page_params = "per_page"   # ← what the "how many per page" param is called
+per_page_default = 20          # ← how many results per request
+```
+
+> [!TIP]
+> **How to spot PAGE in docs:** Look for words like "page", "page number", "per_page", "results per page". This is the most common type — if in doubt, it's probably PAGE.
+
+---
+
+### 📏 OFFSET — "Skip The First 40 Results"
+
+Instead of saying "give me page 3", you say "skip 40 results, then give me 20."
+
+It's like saying *"I already read 40 photos, start from photo #41."*
+
+```
+Request 1:  /search?q=cats&offset=0&limit=20     → photos 0-19   (skip nothing)
+Request 2:  /search?q=cats&offset=20&limit=20    → photos 20-39  (skip first 20)
+Request 3:  /search?q=cats&offset=40&limit=20    → photos 40-59  (skip first 40)
+```
+
+**PAGE vs OFFSET — what's the difference?**
+
+```
+PAGE:     "Give me page 3"          → page=3
+OFFSET:   "Skip 40, give me 20"    → offset=40
+
+Same result! Just different way of asking.
+```
+
+**How we translate it:**
+```python
+pagination = PaginationType.OFFSET
+page_params = "offset"         # ← the "skip" parameter name
+per_page_params = "limit"      # ← the "how many" parameter name
+per_page_default = 20
+```
+
+> [!TIP]
+> **How to spot OFFSET in docs:** Look for words like "offset", "skip", "start", "limit" (instead of "per_page"). APIs using "limit" + "offset" are always OFFSET type.
+
+---
+
+### 🎟️ CURSOR — "Here's Your Ticket For The Next Batch"
+
+This is the trickiest one. The API gives you a **magic token** (a random string) that means "use this to get the next batch."
+
+You **cannot** jump to page 5 directly. You must go 1 → 2 → 3 → 4 → 5.
+
+```
+Request 1:  /search?q=cats
+Response:   { "data": [...], "next_cursor": "eyJpZCI6MTIzNH0=" }
+                                              ^^^^^^^^^^^^^^^^
+                                              "Use THIS to get more"
+
+Request 2:  /search?q=cats&cursor=eyJpZCI6MTIzNH0=
+Response:   { "data": [...], "next_cursor": "eyJpZCI6NTY3OH0=" }
+
+Request 3:  /search?q=cats&cursor=eyJpZCI6NTY3OH0=
+Response:   { "data": [...], "next_cursor": null }
+                                              ^^^^
+                                              null = "No more results, you're done"
+```
+
+**Real world example:** Twitter/X API does this. Pexels actually gives you a `next_page` URL in the response too — which is a form of cursor.
+
+**How we translate it:**
+```python
+pagination = PaginationType.CURSOR
+# The engine looks for "next_cursor" or "next_page" in the API response
+```
+
+> [!TIP]
+> **How to spot CURSOR in docs:** Look for words like "cursor", "next_page", "continuation_token", "next_token". The key sign is: the response **gives you something** to pass in the next request.
+
+---
+
+### Comparison — All Three Side by Side
+
+```
+                     PAGE                 OFFSET               CURSOR
+                     ────                 ──────               ──────
+You send:            page=3              offset=40            cursor=eyJpZ...
+You know:            "I want page 3"     "Skip 40 items"      "Continue from here"
+Can skip ahead?      ✅ Yes              ✅ Yes               ❌ No, sequential only
+Used by:             Pexels, Pixabay     Spotify, Tenor       Twitter, Facebook
+```
+
+---
+
+## Step 3: Search Param — Why "q" vs "query"?
+
+Every API has a **URL parameter** for your search words. They just name it differently:
+
+**Pixabay docs say:**
+```
+https://pixabay.com/api/?key=xxx&q=yellow+flowers
+                                 ^^
+                                 The param is called "q"
+```
+
+**Pexels docs say:**
+```
+https://api.pexels.com/v1/search?query=cats
+                                 ^^^^^
+                                 The param is called "query"
+```
+
+That's it! Same concept, different name. Our `search_param` field handles this:
+
+```python
+# Pixabay pipeline:  search_param = "q"       →  ?q=cats
+# Pexels pipeline:   search_param = "query"   →  ?query=cats
+```
+
+The default in `ApiTemplate` is `"q"` because most APIs use it. Pexels is the exception.
+
+---
+
+## Step 4: Putting It All Together — Reading a New API
+
+Let's say you find a new image API. Here's exactly what to look for in the docs:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   READING API DOCS CHECKLIST                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. FIND THE BASE URL                                       │
+│     Look for: "Endpoint", "Base URL", "API URL"             │
+│     Example:  https://api.example.com/v1/search             │
+│     Maps to:  base_url = "https://api.example.com/v1/search"│
+│                                                             │
+│  2. FIND THE AUTH METHOD                                    │
+│     Look for: "Authentication", "Authorization", "API Key"  │
+│     Q: Does the key go in a header or the URL?              │
+│        Header → BEARER or HEADERS                           │
+│        URL    → QUERY                                       │
+│     Maps to:  auth_type, auth_param                         │
+│                                                             │
+│  3. FIND THE SEARCH PARAMETER                               │
+│     Look for: "Search", "Query parameter"                   │
+│     Q: What's the URL param name? (?q= or ?query= or ?s=)  │
+│     Maps to:  search_param                                  │
+│                                                             │
+│  4. FIND THE PAGINATION METHOD                              │
+│     Look for: "Pagination", "page", "offset", "cursor"     │
+│     Q: Do they use page numbers? skip/offset? tokens?       │
+│     Maps to:  pagination, page_params, per_page_params      │
+│                                                             │
+│  5. ANY EXTRA REQUIRED PARAMS?                              │
+│     Some APIs require extra stuff like "orientation=landscape"│
+│     Maps to:  extra_params = {"orientation": "landscape"}   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Real Example: Translating Pixabay Docs → Our Code
+
+Here's the Pixabay JavaScript example from their docs:
+
+```javascript
+// FROM PIXABAY DOCS:
+var URL = "https://pixabay.com/api/?key=" + API_KEY + "&q=" + encodeURIComponent('red roses');
+```
+
+Let's break this URL apart:
+
+```
+https://pixabay.com/api/  ?  key=abc123  &  q=red+roses
+─────────────────────────     ──────────     ──────────
+base_url                      auth (QUERY)   search_param="q"
+                              auth_param="key"
+```
+
+Now we translate:
+
+```python
+template = ApiTemplate(
+    base_url="https://pixabay.com/api/",    # ← from the URL
+    auth_type=AuthType.QUERY,                # ← key is in the URL, not a header
+    auth_key="PIXABAY_API_KEY",              # ← env var name (YOU pick this)
+    auth_param="key",                        # ← from ?key=xxx in the URL
+    search_param="q",                        # ← from &q=red+roses in the URL
+    pagination=PaginationType.PAGE,          # ← docs say "page" and "per_page"
+    page_params="page",                      # ← from their docs
+    per_page_params="per_page",              # ← from their docs
+    per_page_default=20,                     # ← from their docs (default 20)
+)
+```
+
+And compare with Pexels:
+
+```python
+template = ApiTemplate(
+    base_url="https://api.pexels.com/v1/search",  # ← different URL
+    auth_type=AuthType.BEARER,                      # ← key goes in Authorization header
+    auth_key="PEXELS_API_KEY",                      # ← different env var
+    search_param="query",                           # ← Pexels calls it "query", not "q"
+    pagination=PaginationType.PAGE,                 # ← same! both use page numbers
+    page_params="page",                             # ← same
+    per_page_params="per_page",                     # ← same
+    per_page_default=20,                            # ← same
+)
+```
+
+**See?** The only things that changed are `base_url`, `auth_type`, `auth_param`, and `search_param`. The engine code stays **identical** for both.

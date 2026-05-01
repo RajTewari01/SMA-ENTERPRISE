@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -7,9 +7,18 @@ ENV PYTHONHASHSEED=0
 
 WORKDIR /app
 
+# Build tools needed for llama-cpp-python (compiles C++ from source)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy dependency files
 COPY  --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml README.md ./
+
+# Install dependencies first (layer caching — only re-runs when pyproject.toml changes)
+RUN uv pip install --system --no-cache-dir .[ai,core,server]
 
 # Copy application source code
 COPY config/ ./config/
@@ -17,8 +26,5 @@ COPY core/ ./core/
 COPY db/ ./db/
 COPY services/ ./services/
 
-# Install dependencies (AI and Core for inference)
-RUN uv pip install --system --no-cache-dir .[ai,core,server]
-
 # Default command
-CMD ["sma-agent"]
+CMD ["sma-enterprise"]

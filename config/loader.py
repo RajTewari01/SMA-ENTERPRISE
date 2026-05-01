@@ -1,19 +1,27 @@
+"""
+loader.py
+=========
+Environment-aware config loader. Returns DevConfig or ProdConfig
+based on APP_ENV in the env file.
+"""
+
+from pathlib import Path
+
+from dotenv import dotenv_values
+
 from config.prod import ProdConfig
 from config.dev import DevConfig
-from pathlib import Path
-from dotenv import dotenv_values
-from typing import Callable,Any
-import sys
 
-__ROOT__ =  Path(__file__).absolute().resolve().parents[1]
-sys.path.insert(0,str(__ROOT__))
-from core.paths import APP_ENVIRONMENT
+_ROOT_ = Path(__file__).absolute().resolve().parents[1]
+_ENV_FILE = _ROOT_ / "env" / "config.env"
 
-env_data = dotenv_values(APP_ENVIRONMENT) if Path(APP_ENVIRONMENT).exists() else None
+# Load env safely (None if file doesn't exist)
+_env_data = dotenv_values(_ENV_FILE) if _ENV_FILE.exists() else {}
 
 
-def get_config() -> Callable[..., Any]:
-    env_values = env_data.get("APP_ENV","development")
-    if env_values == 'production': 
+def get_config():
+    """Return config based on APP_ENV environment variable."""
+    env = _env_data.get("APP_ENV", "development")
+    if env == "production":
         return ProdConfig()
-    return DevConfig()    
+    return DevConfig()

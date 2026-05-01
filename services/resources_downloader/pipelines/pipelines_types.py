@@ -9,7 +9,7 @@ __ROOT__ = Path(__file__).absolute().resolve().parents[2]
 from core.paths import DEBUG
 from services.resources_downloader.pipelines.base import sanitize_search_term
 
-path.insert(0,str())
+path.insert(0,str(__ROOT__))
 class MediaTypes(str, Enum):
     SONGS = "songs"
     IMAGES = "images"
@@ -58,7 +58,7 @@ class ConfigPipelines :
     api_provider : str = ''
     template : ApiTemplate | None = None
 
-    def __post_init___(self):
+    def __post_init__(self):
         DEFAULT_MEDIA_COUNT = {
             "SONGS" : 1,
             "MUSIC" : 1,
@@ -67,20 +67,21 @@ class ConfigPipelines :
             "GIFS" : 10
         }
         if self.count is None:
-            self.count = sum(DEFAULT_MEDIA_COUNT.get(mt.values.upper(),5)for mt in self.media_type)
+            self.count = sum(DEFAULT_MEDIA_COUNT.get(mt.value.upper(),5)for mt in self.media_type)
         if self.output_dir:
-            if not Path(self.output_dir).exists():
-                self.output_dir.mkdir(parents=True,exist_ok =True)
+            self.output_dir = Path(self.output_dir)
+            if not self.output_dir.exists():
+                self.output_dir.mkdir(parents=True,exist_ok=True)
         if self.search_term:
-            self.search_term = self.sanitize_searchterm(term=self.search_term)
+            self.search_term = self._sanitize_searchterm(term=self.search_term)
 
     def _sanitize_searchterm(self, term : str ) ->str :
         sanitized_term = sanitize_search_term(term=term)
         return sanitized_term 
         
-    def next_searchterm() ->str : pass
+    def next_searchterm(self) ->str : pass
 
-    def get_random_searchterm1()->str : pass
+    def get_random_searchterm(self)->str : pass
 
 
     

@@ -76,8 +76,11 @@ media = [
     "moviepy",
     "imageio",
     "imageio-ffmpeg",
-    "pillow>=12.1.1"
+    "pillow>=12.1.1",
+    "edge-tts",
+    "openai-whisper",
 ]
+
 
 networking = [
     "requests>=2.33.0",
@@ -85,7 +88,9 @@ networking = [
     "websocket-client",
     "aiohttp",
     "yt-dlp",
+    "scrapy>=2.11",
 ]
+
 
 core = [
     "pydantic",
@@ -98,7 +103,20 @@ server = [
     "fastapi",
     "uvicorn",
     "authlib",
-    "httpx"]
+    "httpx",
+    "celery[redis]>=5.3",
+    "redis>=5.0",
+]
+
+inference = [
+    "litellm>=1.40",
+    "langchain>=0.2",
+    "langgraph>=0.1",
+    "langchain-community>=0.2",
+    "instructor>=1.0",
+    "mcp>=1.0",
+    "pydantic>=2.0",
+]
 
 all = [
     "sma-enterprise[ai]",
@@ -107,14 +125,15 @@ all = [
     "sma-enterprise[media]",
     "sma-enterprise[networking]",
     "sma-enterprise[core]",
-    "sma-enterprise[server]"
+    "sma-enterprise[server]",
+    "sma-enterprise[inference]",
 ]
 
 [project.scripts]
 sma-enterprise = "sma_enterprise.runner:main"
 
 [tool.setuptools.packages.find]
-include = ["apps*", "config*", "core*", "db*"]
+include = ["apps*", "config*", "core*", "db*", "services*"]
 
 [tool.ruff]
 target-version = "py310"
